@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Arbiter — Explainable Credit Decisioning</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --panel: #ffffff;
+    --border: #e1e4e9;
+    --text: #1a1d23;
+    --muted: #666c76;
+    --accent: #3465d4;
+    --approved: #1f9254;
+    --conditional: #b97a14;
+    --denied: #c43e3e;
+    --review: #7452c7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 24px 24px 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 4px 0; font-size: 22px; }
+  header p { margin: 0 0 20px 0; color: var(--muted); font-size: 14px; max-width: 760px; }
+  nav { display: flex; gap: 4px; }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  nav button.active { color: var(--text); border-bottom-color: var(--accent); }
+  main { padding: 24px; max-width: 900px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 4px 0; font-size: 15px; }
+  .card p.hint { margin: 0 0 14px 0; color: var(--muted); font-size: 13px; }
+  .samples { display: flex; gap: 10px; flex-wrap: wrap; }
+  .samples button {
+    background: #eef0f4;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .samples button:hover { border-color: var(--accent); }
+  .upload-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+  input[type="file"] { color: var(--muted); font-size: 13px; }
+  .primary-btn {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .primary-btn:disabled { opacity: 0.5; cursor: default; }
+  #result { display: none; }
+  .verdict-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .verdict-APPROVED { background: rgba(62,192,112,0.15); color: var(--approved); }
+  .verdict-CONDITIONAL { background: rgba(224,169,60,0.15); color: var(--conditional); }
+  .verdict-DENIED { background: rgba(224,85,85,0.15); color: var(--denied); }
+  .verdict-needs_review { background: rgba(155,126,224,0.15); color: var(--review); }
+  pre {
+    background: #f1f2f5;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  #explanation { margin-top: 12px; line-height: 1.5; font-size: 14px; }
+  .steps { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .steps li { margin-bottom: 4px; }
+  iframe { width: 100%; height: 78vh; border: 1px solid var(--border); border-radius: 8px; background: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Arbiter</h1>
+  <p>
+    Explainable credit decisioning. A document comes in, rules decide the
+    verdict deterministically, and an LLM explains the outcome in plain
+    language — grounded only in retrieved context, never deciding the
+    verdict itself. Pick a sample below to see the full pipeline run.
+  </p>
+  <nav>
+    <button class="tab-btn active" data-tab="demo">Demo</button>
+    <button class="tab-btn" data-tab="docs">API Reference</button>
+  </nav>
+</header>
+
+<main>
+  <div class="tab active" id="tab-demo">
+    <div class="card">
+      <h2>1. Submit a loan application</h2>
+      <p class="hint">Try a bundled example, or upload your own document.</p>
+      <div class="samples">
+        <button data-sample="7_loan_application_approved.txt">Load approved example</button>
+        <button data-sample="8_loan_application_conditional.txt">Load conditional example</button>
+        <button data-sample="4_loan_application_multi_section.txt">Load needs-review example</button>
+      </div>
+      <div class="upload-row">
+        <input type="file" id="fileInput" />
+        <button class="primary-btn" id="submitBtn">Submit</button>
+      </div>
+      <ol class="steps">
+        <li>Document is parsed and validated — incomplete documents are routed to human review, not guessed at</li>
+        <li>Rules engine evaluates DTI and credit score deterministically</li>
+        <li>Decision + outbox event are written atomically, same transaction</li>
+        <li>PII-free summary is embedded for retrieval-augmented explanation later</li>
+      </ol>
+    </div>
+
+    <div class="card" id="result">
+      <h2>2. Result</h2>
+      <div id="verdictArea"></div>
+      <pre id="rawResult"></pre>
+      <button class="primary-btn" id="explainBtn" style="display:none;">Explain this decision</button>
+      <div id="explanation"></div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-docs">
+    <p class="hint" style="color: var(--muted); font-size: 13px;">
+      Live, auto-generated from the actual route definitions — every
+      endpoint below is real and callable.
+    </p>
+    <iframe src="/docs"></iframe>
+  </div>
+</main>
+
+<script>
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  const resultCard = document.getElementById("result");
+  const verdictArea = document.getElementById("verdictArea");
+  const rawResult = document.getElementById("rawResult");
+  const explainBtn = document.getElementById("explainBtn");
+  const explanationDiv = document.getElementById("explanation");
+  const submitBtn = document.getElementById("submitBtn");
+  const fileInput = document.getElementById("fileInput");
+
+  async function submitFile(file) {
+    submitBtn.disabled = true;
+    explanationDiv.textContent = "";
+    explainBtn.style.display = "none";
+    verdictArea.innerHTML = "<p style='color:var(--muted)'>Submitting…</p>";
+    resultCard.style.display = "block";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const resp = await fetch("/route/loan_application", { method: "POST", body: formData });
+      const data = await resp.json();
+      rawResult.textContent = JSON.stringify(data, null, 2);
+
+      if (data.status === "needs_review") {
+        verdictArea.innerHTML = `<span class="verdict-badge verdict-needs_review">NEEDS REVIEW</span>
+          <p>${data.reason ? escapeHtml(data.reason) : "This document is missing required fields."}</p>`;
+        return;
+      }
+      if (!resp.ok || data.detail) {
+        verdictArea.innerHTML = `<span class="verdict-badge verdict-DENIED">ERROR</span>
+          <p>${escapeHtml(data.detail || "Request failed")}</p>`;
+        return;
+      }
+
+      // fetch the decision to show the verdict (the submit response doesn't include it)
+      const decisionResp = await fetch(`/route/get_decision_for_application?application_id=${data.id}`);
+      const decision = await decisionResp.json();
+      const verdict = decision.verdict || "UNKNOWN";
+      verdictArea.innerHTML = `<span class="verdict-badge verdict-${verdict}">${verdict}</span>
+        <p>Application #${data.id} — confidence ${decision.confidence ?? "—"}%</p>`;
+
+      explainBtn.style.display = "inline-block";
+      explainBtn.onclick = () => explain(data.id);
+    } catch (err) {
+      verdictArea.innerHTML = `<span class="verdict-badge verdict-DENIED">ERROR</span><p>${escapeHtml(String(err))}</p>`;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  async function explain(applicationId) {
+    explanationDiv.textContent = "Generating explanation…";
+    try {
+      const resp = await fetch(`/route/retrieve_for_decision?application_id=${applicationId}&k=3`);
+      const data = await resp.json();
+      explanationDiv.textContent = data.explanation || JSON.stringify(data);
+    } catch (err) {
+      explanationDiv.textContent = "Failed to generate explanation: " + err;
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.querySelectorAll(".samples button").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const name = btn.dataset.sample;
+      const resp = await fetch(`/samples/${name}`);
+      const text = await resp.text();
+      const file = new File([text], name, { type: "text/plain" });
+      submitFile(file);
+    });
+  });
+
+  submitBtn.addEventListener("click", () => {
+    if (fileInput.files.length === 0) {
+      alert("Choose a file first, or click one of the sample buttons above.");
+      return;
+    }
+    submitFile(fileInput.files[0]);
+  });
+</script>
+
+</body>
+</html>
