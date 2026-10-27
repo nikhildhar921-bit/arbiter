@@ -4,6 +4,7 @@ import json
 import logging
 import uuid
 from fastapi import HTTPException, UploadFile
+from pydantic import ValidationError
 from pypdf import PdfReader
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -92,7 +93,14 @@ async def receiveLoanApplicationFromFile(file: UploadFile):
         else:
             text = raw_bytes.decode("utf-8")
 
-        parsed = parseLoanApplicationText(text)
+        try:
+            parsed = parseLoanApplicationText(text)
+        except ValidationError as e:
+            # Document is missing required fields — not a system failure, a
+            # document the extractor can't confidently handle. Route to a
+            # human instead of guessing or crashing.
+            log.info("extraction incomplete, routing to human review: %s", e)
+            return {"status": "needs_review", "reason": str(e)}
 
         # same file content always gives same idempotency key
         idempotency_key = uuid.uuid5(uuid.NAMESPACE_OID, raw_bytes.hex())
