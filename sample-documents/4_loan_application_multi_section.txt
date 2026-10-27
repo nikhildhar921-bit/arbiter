@@ -1,0 +1,40 @@
+=== PAGE 1 OF 3 ===
+
+LOAN APPLICATION FORM
+Application Ref: LN-2026-88213
+
+Applicant Name: Suresh Babu Nair
+Loan Amount Requested: INR 8,50,000
+Loan Purpose: Home renovation
+Requested Tenure: 36 months
+
+Declared Monthly Income: 95,000
+Declared Employment Type: Salaried (IT Services)
+Employer Name: Vertex Software Solutions Pvt Ltd
+Years at Current Employer: 4
+
+=== PAGE 2 OF 3 ===
+
+EXISTING LIABILITIES DECLARED BY APPLICANT
+
+Lender                  Type              Outstanding     EMI          Status
+------------------------------------------------------------------------------
+HDFC Bank               Car Loan          3,20,000        11,200       Active
+Bajaj Finserv           Personal Loan     0               0            Closed (Mar 2025)
+ICICI Credit Card       Credit Card       42,500           -            Active, revolving
+
+Note from applicant: "personal loan from Bajaj was fully closed last year,
+closure letter attached separately, not part of this scan"
+
+=== PAGE 3 OF 3 (this page is actually an excerpt from the LENDER'S internal
+credit policy document, appears to have been scanned into the same file by
+mistake — included here as-is) ===
+
+INTERNAL POLICY EXCERPT — DO NOT SHARE WITH APPLICANT
+Section 4.2: Debt-to-Income thresholds
+  - DTI <= 40%: auto-eligible for standard rate
+  - DTI 40-55%: refer to manual underwriting
+  - DTI > 55%: auto-decline unless secured collateral > 150% of loan value
+
+Section 4.3: Employer tenure
+  - < 1 year at current employer: additional income verification required

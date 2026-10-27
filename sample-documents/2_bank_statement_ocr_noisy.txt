@@ -1,0 +1,24 @@
+NATI0NAL TRUST BANK
+Staternent of Ac c ount
+
+Acc0unt Hclder: RAJESH  KUMAR VERMA
+Acc No : XXXXXXXX2 2 17    IFSC:  NTBL0OO1 42
+Stat3ment Period : Ol-Jul-2O26  to  31-Ju1-2O26
+
+Date       Descripti0n                          Withdrawa1      Deposit        Balance
+--------------------------------------------------------------------------------
+Ol/O7      OPENING BALANCE                                                     84,210.5O
+O3/07      SALARY CREDIT-ACME MFG C0                          72,000.OO      156,210.5O
+O7/07      UPI-SWIGGY*ORDER 88213                    542.OO                  155,668.5O
+12/O7      NEFT TRF T0 L ANDLORD               22,0O0.0O                     133,668.5O
+15/07      ATM WDL NTB AT M K0THRUD                5,00O.OO                  128,668.5O
+19/O7      CC PAYMENT - HDFCBANK                    18,45O.OO                l10,218.5O
+   (payment ref continued from previous line, autopay ,mandate #7729214)
+22/07      lNTEREST CREDIT SAVINGS                              412.30       110,63O.8O
+26/O7      UPI-UNKNOWN MERCHANT 4471                 [illegible]              ??????
+29/O7      P0S PURCHASE-RELIANCE MART             3,214.0O                   107,416.8O(approx)
+31/O7      CL0SING BALANCE                                                    l07,4l6.8O
+
+** this statement was generated from a scanned copy; some characters may be
+misrecognised (0/O, 1/l/I confusion, spacing errors) and one transaction
+amount on 26/O7 could not be read. **

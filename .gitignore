@@ -1,0 +1,32 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+
+# Secrets and local data
+.env
+data/raw/*
+data/processed/*
+!data/**/.gitkeep
+evals/results/*
+!evals/results/.gitkeep
+loadtest/results_*.csv
+
+# Personal notes
+plan.md
+phase.md
+.vscode
+sample-documents
+.DS_Store
+.claude
+qdrant_data/
