@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: arbiter
+      POSTGRES_PASSWORD: arbiter
+      POSTGRES_DB: arbiter
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbiter -d arbiter"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    ports:
+      - "16686:16686"   # UI
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment: &appenv
+      DATABASE_URL: postgresql+psycopg://arbiter:arbiter@postgres:5432/arbiter
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      OPEN_AI_KEY: ${OPEN_AI_KEY:?set OPEN_AI_KEY in your shell or .env}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  app:
+    build: .
+    ports: ["8000:8000"]
+    environment: *appenv
+    # local embedded Qdrant store (QdrantClient(path="qdrant_data") in code,
+    # not a server) — mounted so it survives container restarts
+    volumes: [qdrantdata:/app/qdrant_data]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis:    {condition: service_healthy}
+      migrate:  {condition: service_completed_successfully}
+
+volumes:
+  pgdata:
+  qdrantdata:

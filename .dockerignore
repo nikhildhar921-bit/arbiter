@@ -1,0 +1,12 @@
+.venv
+.git
+.pytest_cache
+.ruff_cache
+__pycache__
+qdrant_data
+evals/results
+loadtest/results_*.csv
+.env
+*.md
+.claude
+.vscode
